@@ -1,0 +1,15 @@
+{
+  "name": "crowdsourced-data-viz-backend",
+  "version": "1.0.0",
+  "description": "Backend service for the Crowdsourced Data Visualization Platform",
+  "main": "server.js",
+  "type": "commonjs",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests"
+  }
+}

@@ -1,12 +1,22 @@
 const http = require('http');
-const app = require('./app');
-const { initializeRealTimeCollaboration } = require('./utils/realTimeCollaboration');
+const { createApp } = require('./app');
+const config = require('./config/config');
+const { createLogger } = require('./utils/logger');
 
-const server = http.createServer(app);
+const logger = createLogger(config.logLevel);
 
-initializeRealTimeCollaboration(server);
+const startServer = async () => {
+    const { handler } = await createApp();
+    const server = http.createServer(handler);
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    server.listen(config.port, () => {
+        logger.info(`Server running on port ${config.port}`);
+    });
+
+    return server;
+};
+
+startServer().catch((error) => {
+    logger.error('Failed to start server', { message: error.message, stack: error.stack });
+    process.exit(1);
 });

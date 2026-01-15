@@ -1,34 +1,54 @@
-const User = require('../models/user');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const { validateUserPayload } = require('../utils/validation');
+const { hashPassword, verifyPassword } = require('../utils/password');
+const { AppError } = require('../utils/errors');
+const { createToken } = require('../utils/token');
 const config = require('../config/config');
 
-exports.registerUser = async (req, res) => {
-    try {
-        const { username, password, email } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User({ username, password: hashedPassword, email });
-        await user.save();
-        res.status(201).json({ message: 'User registered successfully' });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+const registerUser = async ({ store, body }) => {
+    validateUserPayload(body);
+    const existing = store.getUserByUsername(body.username);
+    if (existing) {
+        throw new AppError('User already exists', 409, 'Username already registered.');
     }
+    const existingEmail = store.getUserByEmail(body.email);
+    if (existingEmail) {
+        throw new AppError('Email already exists', 409, 'Email already registered.');
+    }
+    const user = await store.createUser({
+        username: body.username,
+        email: body.email,
+        passwordHash: hashPassword(body.password),
+    });
+    return {
+        status: 201,
+        body: {
+            message: 'User registered successfully',
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+            },
+        },
+    };
 };
 
-exports.loginUser = async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const user = await User.findOne({ username });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
-        const token = jwt.sign({ id: user._id }, config.secret, { expiresIn: '1h' });
-        res.status(200).json({ token });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+const loginUser = async ({ store, body }) => {
+    const { username, password } = body || {};
+    if (!username || !password) {
+        throw new AppError('Missing credentials', 400, 'Username and password are required.');
     }
+    const user = store.getUserByUsername(username);
+    if (!user) {
+        throw new AppError('User not found', 404, 'User not found.');
+    }
+    if (!verifyPassword(password, user.passwordHash)) {
+        throw new AppError('Invalid credentials', 401, 'Invalid credentials.');
+    }
+    const token = createToken({ userId: user.id, username: user.username }, config.tokenSecret);
+    return { status: 200, body: { token } };
+};
+
+module.exports = {
+    registerUser,
+    loginUser,
 };

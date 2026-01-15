@@ -4,8 +4,92 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crowdsourced Data Visualization Platform</title>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <div id="root"></div>
+    <header class="hero">
+        <div>
+            <h1>Crowdsourced Data Visualization Platform</h1>
+            <p>Upload datasets, collaborate on cleaning, and explore quick visual summaries.</p>
+        </div>
+        <div class="status">
+            <span class="status-indicator" id="connectionIndicator"></span>
+            <span id="connectionLabel">Connecting...</span>
+        </div>
+    </header>
+
+    <main>
+        <section class="panel">
+            <h2>Upload a Dataset</h2>
+            <p>Paste a JSON array of objects below to create a dataset.</p>
+            <form id="uploadForm" class="stack">
+                <label>
+                    Dataset name
+                    <input type="text" name="name" required placeholder="Customer feedback" />
+                </label>
+                <label>
+                    Uploaded by
+                    <input type="text" name="uploadedBy" required placeholder="alex" />
+                </label>
+                <label>
+                    Description
+                    <textarea name="description" rows="2" placeholder="Short description..."></textarea>
+                </label>
+                <label>
+                    Tags (comma separated)
+                    <input type="text" name="tags" placeholder="survey, beta" />
+                </label>
+                <label>
+                    Dataset JSON
+                    <textarea name="data" rows="8" required placeholder='[{"country":"US","score":95}, {"country":"DE","score":88}]'></textarea>
+                </label>
+                <button type="submit">Upload dataset</button>
+            </form>
+            <div id="uploadStatus" class="status-message" aria-live="polite"></div>
+        </section>
+
+        <section class="panel">
+            <h2>Datasets</h2>
+            <div id="datasetList" class="list"></div>
+        </section>
+
+        <section class="panel" id="detailPanel">
+            <h2>Dataset Details</h2>
+            <div id="datasetDetail" class="detail"></div>
+        </section>
+
+        <section class="panel">
+            <h2>Annotations</h2>
+            <form id="annotationForm" class="stack">
+                <label>
+                    Dataset ID
+                    <input type="text" name="datasetId" required placeholder="Select a dataset" />
+                </label>
+                <label>
+                    Author
+                    <input type="text" name="author" required placeholder="jordan" />
+                </label>
+                <label>
+                    Message
+                    <textarea name="message" rows="3" required placeholder="Flagged missing region codes"></textarea>
+                </label>
+                <button type="submit">Add annotation</button>
+            </form>
+            <div id="annotationStatus" class="status-message" aria-live="polite"></div>
+        </section>
+
+        <section class="panel">
+            <h2>Visualization Summary</h2>
+            <p>Select a dataset to generate quick summary statistics.</p>
+            <div id="visualizationSummary" class="summary"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Live updates broadcast over Server-Sent Events. Keep this page open to watch collaborations in real time.</p>
+    </footer>
+
+    <script src="/services/api.js"></script>
+    <script src="/app.js"></script>
 </body>
 </html>
