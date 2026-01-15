@@ -1,0 +1,15 @@
+{
+  "name": "Cleaning edge cases",
+  "description": "Payload designed to exercise the cleaning pipeline",
+  "uploadedBy": "qa",
+  "tags": ["cleaning", "edge"],
+  "data": [
+    { "region": " NA ", "score": "90", "note": "" },
+    null,
+    { "region": "EU", "score": "", "note": "Missing score" },
+    { "region": "APAC", "score": "88", "note": "ok" },
+    {},
+    { "region": "LATAM", "score": 76, "note": null },
+    { "region": "MEA", "score": " 82 ", "note": "spacing" }
+  ]
+}

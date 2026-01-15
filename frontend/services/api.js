@@ -1,52 +1,36 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:5000/api';
-
-export const uploadData = async (formData) => {
-    try {
-        const response = await axios.post(`${API_URL}/data/upload`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        });
-        return response.data;
-    } catch (error) {
-        throw new Error('Error uploading data: ' + error.message);
+const parseJson = async (response) => {
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || 'Request failed');
     }
+    return data;
 };
 
-export const getDatasets = async () => {
-    try {
-        const response = await axios.get(`${API_URL}/data`);
-        return response.data;
-    } catch (error) {
-        throw new Error('Error fetching datasets: ' + error.message);
-    }
+const request = async (path, options) => {
+    const response = await fetch(path, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        ...options,
+    });
+    return parseJson(response);
 };
 
-export const cleanDataset = async (id) => {
-    try {
-        const response = await axios.post(`${API_URL}/data/clean/${id}`);
-        return response.data;
-    } catch (error) {
-        throw new Error('Error cleaning dataset: ' + error.message);
-    }
+const api = {
+    listDatasets: () => request('/api/data'),
+    getDataset: (id) => request(`/api/data/${id}`),
+    uploadDataset: (payload) => request('/api/data/upload', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    }),
+    cleanDataset: (id) => request(`/api/data/${id}/clean`, {
+        method: 'POST',
+    }),
+    addAnnotation: (id, payload) => request(`/api/data/${id}/annotations`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    }),
+    getVisualization: (id) => request(`/api/data/${id}/visualization`),
 };
 
-export const registerUser = async (userData) => {
-    try {
-        const response = await axios.post(`${API_URL}/users/register`, userData);
-        return response.data;
-    } catch (error) {
-        throw new Error('Error registering user: ' + error.message);
-    }
-};
-
-export const loginUser = async (credentials) => {
-    try {
-        const response = await axios.post(`${API_URL}/users/login`, credentials);
-        return response.data;
-    } catch (error) {
-        throw new Error('Error logging in: ' + error.message);
-    }
-};
+window.api = api;
